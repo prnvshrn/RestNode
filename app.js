@@ -8,6 +8,7 @@ mongoose.connect('mongodb://localhost/bookstore');
 var db = mongoose.connection;
 var Crawler = require("crawler");
 var url = require('url');
+var cheerio = require("cheerio");
 
 app.use(bodyParser.json());
 
@@ -61,8 +62,8 @@ app.get('/football/',function(req, res){
 });
 
 c.queue([{
-    uri: 'https://www.premierleague.com/players/5000/players/stats',
-    //uri:'https://www.whoscored.com/Players/77564/MatchStatistics/',
+    uri: 'https://www.premierleague.com/players/4823/players/stats',
+    //uri:'https://www.whoscored.com/Players/13756/Show/',
     jQuery: false,
  
     // The global callback won't be called
@@ -71,6 +72,10 @@ c.queue([{
             console.log(error);
         }else{
             console.log('Grabbed', result.body.length, 'bytes');
+            var $ = cheerio.load(result.body);
+            var temp = $('.allStatContainer.statgoals');
+            var temp2 = temp.text();
+            console.log('Goals scored:' + temp2);
             res.send(result.body);
         }
     }
