@@ -6,6 +6,8 @@ Genre = require('./models/genres');
 Book = require('./models/books');
 mongoose.connect('mongodb://localhost/bookstore');
 var db = mongoose.connection;
+var Crawler = require("crawler");
+var url = require('url');
 
 app.use(bodyParser.json());
 
@@ -41,8 +43,43 @@ app.get('/api/books/',function(req, res){
 	});
 });
 
+app.get('/football/',function(req, res){
+	var c = new Crawler({
+    maxConnections : 10,
+    // This will be called for each crawled page
+    callback : function (error, res, done) {
+        if(error){
+            console.log(error);
+        }else{
+            var $ = res.$;
+            // $ is Cheerio by default
+            //a lean implementation of core jQuery designed specifically for the server
+            console.log($("title").text());
+        }
+        done();
+    }
+});
+
+c.queue([{
+    uri: 'https://www.premierleague.com/players/5000/players/stats',
+    //uri:'https://www.whoscored.com/Players/77564/MatchStatistics/',
+    jQuery: false,
+ 
+    // The global callback won't be called
+    callback: function (error, result) {
+        if(error){
+            console.log(error);
+        }else{
+            console.log('Grabbed', result.body.length, 'bytes');
+            res.send(result.body);
+        }
+    }
+}]);
+
+});
+
 app.get('/api/books/:_id',function(req, res){
-	Book.getBookById(req.params._id,function(err, books){
+	Book.getBookById(req.params._id,function(err, books){s
 			if(err){
 				throw err;
 			}
